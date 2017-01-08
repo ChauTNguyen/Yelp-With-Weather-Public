@@ -1,0 +1,185 @@
+html {
+    color: white;
+    background-color: #414141;
+}
+
+.loader-img {
+    padding: 100px 0;
+}
+
+.btn-floating-text {
+    position: fixed;
+    right: 100px;
+    padding: 0px 1rem;
+    border-radius: 1px;
+    width: auto;
+}
+
+.btn-floating-text {
+    background-color: #212121;
+    color: white;
+}
+
+.btn-floating-text {
+    cursor: default;
+}
+
+.btn-floating-text:hover {
+    background-color: #212121;
+}
+
+.weather-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.5;
+    background-color: #414141;
+    z-index: -999;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+@media only screen and (min-width: 992px) {
+    .btn-floating-text {
+        background-color: white;
+        color: black;
+    }
+
+    .btn-floating-text:hover {
+        background-color: white;
+    }
+}
+
+#title {
+    color: #ffeb3b;
+}
+
+#root {
+    padding-top: 100px;
+}
+
+.currently {
+    text-align: center;
+}
+
+.currently-header {
+    text-decoration: underline;
+}
+
+.card {
+    border-radius: 10px;
+}
+
+.card-content {
+    color: #212121;
+}
+
+.card-header {
+    display: inline;
+}
+
+.yelp-card-img {
+    min-width: 150px;
+    min-height: 150px;
+}
+
+.card-image {
+    /*TODO: REMOVE?*/
+    padding: 10px;
+}
+
+.chip {
+    margin: 0 0 0 10px;
+}
+
+#search-desc:focus, #search-loc:focus {
+    border-bottom: 1px solid #ffeb3b;
+}
+
+#search-desc:focus + label, #search-loc:focus + label {
+    color: #ffeb3b;
+}
+
+.num-of-ratings {
+    color: #212121;
+}
+
+.hidden {
+    display: none;
+}
+
+.hourly {
+    max-width: 200px;
+    max-height: 200px;
+    width: auto;
+    height: auto;
+    position: relative;
+}
+
+.day .card-content, .day .card-content p {
+    padding: 2px;
+    text-align: center;
+}
+
+.hour-of-day, .day-of-week {
+    color: black !important;
+    font-weight: 900 !important;
+}
+
+.day-of-week {
+    font-size: 1.6rem !important;
+}
+
+.day-loaded {
+    display: inline-block;
+}
+
+.hourly-temperature-overlay, .day-temperature-overlay {
+    color: #212121;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+}
+
+.hourly-temperature, .day-max-temperature {
+    display: block;
+    margin: 0 auto;
+    padding: 30%;
+}
+
+.day-top {
+    color: #212121;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    text-align: center;
+}
+
+.day-bottom {
+    color: #212121;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    text-align: center;
+}
+
+.maxTemp, .minTemp {
+    transform: translate(100%, 0);
+}
+
+.collapsible-header {
+    color: black;
+}
+
+.location {
+    color: #ffeb3b;
+}
