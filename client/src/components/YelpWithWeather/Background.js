@@ -14,8 +14,7 @@ class Background extends Component {
   }
 
   getBackground(icon) {
-    // console.log('icon:', icon);
-    if (icon === 'empty') return {};
+    if (!icon) return {};
 
     let bgStyle = {
       backgroundSize: 'cover',

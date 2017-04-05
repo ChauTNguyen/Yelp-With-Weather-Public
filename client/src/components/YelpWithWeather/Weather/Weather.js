@@ -24,6 +24,7 @@ class Weather extends Component {
 
   getTodayForecast() {
     const { humidity, icon, precipIntensity, temperature, windSpeed } = this.props.weather.current;
+
     return (
       <Currently
         humidity={humidity}
@@ -52,7 +53,7 @@ class Weather extends Component {
             icon={hourlyData[i].icon}
             temperature={hourlyData[i].temperature}
             waitTime={waitTime}
-            />
+          />
         );
 
         waitTime += 250;
@@ -106,7 +107,7 @@ class Weather extends Component {
   render() {
     const { latitude, longitude, weather } = this.props;
     
-    if (weather !== null && weather !== undefined) {
+    if (weather) {
       return (
         <div className="weather">
           <Collapsible popout>

@@ -30,7 +30,7 @@ class YelpWithWeather extends Component {
     this.setWeatherData = this.setWeatherData.bind(this);
     this.fetchLocationData = this.fetchLocationData.bind(this);
     this.setLocationData = this.setLocationData.bind(this);
-    this.yelpResultsNotCached = this.yelpResultsNotCached.bind(this);
+    this.yelpResultsNotCached = this.searchQueriesNotCached.bind(this);
     this.resultsNotCached = this.resultsNotCached.bind(this);
   }
 
@@ -65,7 +65,7 @@ class YelpWithWeather extends Component {
         });
       }
 
-      if (this.yelpResultsNotCached({ searchDesc, searchLoc })) {
+      if (this.searchQueriesNotCached({ searchDesc, searchLoc })) {
         this.fetchSearchTopResults(query);
       }
     }
@@ -89,32 +89,27 @@ class YelpWithWeather extends Component {
     } else {
       const { businesses, region } = response;
       const { results, searchDescKey, searchLocKey } = this.state;
+      const { latitude, longitude } = region.center;
 
-      const searchLocRest = (results && results[searchLocKey]) ? results[searchLocKey] : [];
-
-      const latRes = (results && results[region.center.latitude]) ? results[region.center.latitude] : {};
-
-      const latLonRes = (results && results[region.center.latitude]) ? results[region.center.latitude][region.center.longitude] : {};
+      const prevState = {
+        results,
+        searchLoc: results && results[searchLocKey]
+      };
 
       this.setState({
         results: {
-          ...this.state.results,
+          ...prevState.results,
           ...{
             [searchLocKey]: {
-              ...searchLocRest,
+              ...prevState.searchLoc,
               [searchDescKey]: {
-                location: {
-                  latitude: region.center.latitude,
-                  longitude: region.center.longitude,
-                },
+                location: { latitude, longitude }
               },
             },
           },
           ...{
-            [region.center.latitude]: {
-              ...latRes,
-              [region.center.longitude]: {
-                ...latLonRes,
+            [latitude]: {
+              [longitude]: {
                 yelpResults: businesses,
               },
             },
@@ -138,16 +133,17 @@ class YelpWithWeather extends Component {
 
   fetchWeatherData() {
     this.setState({ isWeatherLoading: true });
+    
     const { searchDescKey, searchLocKey } = this.state;
     const { latitude, longitude } = this.state.results[searchLocKey][searchDescKey].location;
 
-    if (latitude !== null && longitude !== null) {
+    if (latitude && longitude) {
       fetch(`api/v1/darkSky?lat=${latitude}&lon=${longitude}`)
         .then(res => res.json())
         .then(json => this.setWeatherData(json))
         .catch(err => console.error(err));
     } else {
-      console.error('null');
+      console.error('latitude and longitude are null');
     }
   }
 
@@ -157,19 +153,20 @@ class YelpWithWeather extends Component {
     const { searchDescKey, searchLocKey } = this.state;
     const { results } = this.state;
 
-    const position = (results && results[searchLocKey] && results[searchLocKey][searchDescKey]) ? results[searchLocKey][searchDescKey].location : { latitude: null, longitude: null };
-    const latRes = (results && results[position.latitude]) ? results[position] : {};
+    const position = results && results[searchLocKey] && results[searchLocKey][searchDescKey].location;
 
-    const yelpRes = (results && results[position.latitude]) ? results[position.latitude][position.longitude] : [];
+    const prevState = {
+      results,
+      longitude: results && results[position.latitude] && results[position.latitude][position.longitude]
+    };
 
     this.setState({
       results: {
-        ...this.state.results,
+        ...prevState.results,
         ...{
           [position.latitude]: {
-            ...latRes,
             [position.longitude]: {
-              ...yelpRes,
+              ...prevState.longitude, // required because this occurs after fetchYelpResults
               weatherResults: {
                 current: data.currently,
                 hourlySummary: data.hourly.summary,
@@ -202,25 +199,28 @@ class YelpWithWeather extends Component {
   setLocationData(data) {
     const { results, searchDescKey, searchLocKey } = this.state;
 
-    const position = (results && results[searchLocKey]) ? results[searchLocKey][searchDescKey].location : [];
-    const latRes = (results && results[position.latitude]) ? results[position.latitude] : {};
-    const latLonRes = (results && results[position.latitude] && results[position.latitude][position.longitude]) ? results[position.latitude][position.longitude] : {};
+    const position = results && results[searchLocKey] && results[searchLocKey][searchDescKey].location;
+
+    const prevState = {
+      results,
+      longitude: results && results[position.latitude] && results[position.latitude][position.longitude]
+    };
 
     for (let i = 0; i < data.results[0].address_components.length; i += 1) {
       const type = data.results[0].address_components[i].types[0];
       const loc = data.results[0].address_components[i].long_name;
 
       if (type === 'locality') {
-        const locationRes = (results && results[position.latitude] && results[position.latitude][position.longitude]) ? this.state.results[position.latitude][position.longitude].location : [];
+        const _results = this.state.results; // results may have updated
+        const locationRes = _results && _results[position.latitude] && _results[position.latitude][position.longitude].location;
 
         this.setState({
           results: {
             ...this.state.results,
             ...{
               [position.latitude]: {
-                ...latRes,
                 [position.longitude]: {
-                  ...latLonRes,
+                  ...prevState.longitude,
                   location: {
                     ...locationRes,
                     ...{ city: loc },
@@ -233,16 +233,16 @@ class YelpWithWeather extends Component {
       }
 
       if (type === 'administrative_area_level_1') {
-        const locationRes = (results && results[position.latitude] && results[position.latitude][position.longitude]) ? this.state.results[position.latitude][position.longitude].location : [];
+        const _results = this.state.results; // results may have updated
+        const locationRes = _results && _results[position.latitude] && _results[position.latitude][position.longitude].location;
 
         this.setState({
           results: {
             ...this.state.results,
             ...{
               [position.latitude]: {
-                ...latRes,
                 [position.longitude]: {
-                  ...latLonRes,
+                  ...prevState.longitude,
                   location: {
                     ...locationRes,
                     ...{ state: loc },
@@ -259,9 +259,9 @@ class YelpWithWeather extends Component {
     setTimeout(() => this.setState({ isWeatherLoading: false }), 500);
   }
 
-  yelpResultsNotCached({ searchDesc, searchLoc }) {
+  searchQueriesNotCached({ searchDesc, searchLoc }) {
     const { results } = this.state;
-    if (searchDesc === '') searchDesc = 'generalSearch';
+    if (!searchDesc) searchDesc = 'generalSearch';
 
     return !(results && results[searchLoc] && results[searchLoc][searchDesc]);
   }
@@ -269,7 +269,7 @@ class YelpWithWeather extends Component {
   resultsNotCached({ latitude, longitude }) {
     const { results } = this.state;
 
-    return !(results && results[latitude] && results[latitude][longitude] && results[latitude][longitude].weatherResults);
+    return !(results && results[latitude] && results[latitude][longitude].weatherData);
   }
 
   render() {
@@ -280,16 +280,16 @@ class YelpWithWeather extends Component {
     const { city, state } = (results && results[latitude] && results[latitude][longitude] && results[latitude][longitude].location) ? results[latitude][longitude].location : { city: undefined, state: undefined };
     const { isYelpLoading, isWeatherLoading } = this.state;
 
-    const list = (results && results[latitude] && results[latitude][longitude]) ? (results[latitude][longitude].yelpResults) : [];
-    const weatherResults = (results && results[latitude] && results[latitude][longitude]) ? results[latitude][longitude].weatherResults : null;
-    const location = (city !== undefined && state !== undefined) ? `${city}, ${state}` : '';
+    const list = results && results[latitude] && results[latitude][longitude].yelpResults;
+    const weatherResults = results && results[latitude] && results[latitude][longitude].weatherResults;
+    const location = (city && state) ? `${city}, ${state}` : '';
 
-    const icon = (results && results[latitude] && results[latitude][longitude] && results[latitude][longitude] && results[latitude][longitude].weatherResults) ? results[latitude][longitude].weatherResults.current.icon : 'empty';
-
+    const icon = (results && results[latitude] && results[latitude][longitude] && results[latitude][longitude] && results[latitude][longitude].weatherResults) ? results[latitude][longitude].weatherResults.current.icon : '';
+    
     return (
       <div className="container">
         <Background icon={icon} />
-        <h4 id="title">Locate businesses near you along with the weather</h4>
+        <h4 id="title">Locate businesses along with the weather</h4>
         <YelpSearch
           desc={searchDesc}
           loc={searchLoc}

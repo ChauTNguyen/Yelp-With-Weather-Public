@@ -31,7 +31,7 @@ const Currently = ({ humidity, icon, precipIntensity, temperature, windSpeed }) 
       </Col>
       <Col s={12} m={6}>
         <h3 className="currently-header">
-          Precipitation Intensity
+          Precipitation
         </h3>
         <h4>
           {precipIntensity}%
